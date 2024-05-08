@@ -1,0 +1,12 @@
+spring:
+    application:
+        name: djarena-service
+    datasource:
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:djarena}?useSSL=false&allowPublicKeyRetrieval=true
+        driverClassName: org.postgresql.Driver
+        username: ${USERNAME:postgres}
+        password: ${PASSWORD:toor}
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+    flyway:
+        baseline-on-migrate: true
