@@ -1,8 +1,7 @@
 package store.jackgnome.djarenaservice.model.product
 
-data class ProductDto (
+data class ProductUpdateRequest (
     var id: String,
     var name: String,
-    var price: Double?,
-    var preview: String,
+    var price: Double,
 )

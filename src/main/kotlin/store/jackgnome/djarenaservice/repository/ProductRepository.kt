@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository
 import store.jackgnome.djarenaservice.model.product.ProductEntity
 
 @Repository
-interface ProductRepository: CrudRepository<ProductEntity, String> {
+interface ProductRepository : CrudRepository<ProductEntity, String> {
 
     fun findAll(pageable: Pageable): Page<ProductEntity>
 }

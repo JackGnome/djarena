@@ -8,5 +8,29 @@ spring:
         password: ${PASSWORD:toor}
     jpa:
         database-platform: org.hibernate.dialect.PostgreSQLDialect
+    #        properties:
+#          hibernate:
+#              dialect: org.hibernate.dialect.PostgreSQLDialect
     flyway:
         baseline-on-migrate: true
+#    main:
+#        allow-bean-definition-overriding: true
+    servlet:
+        multipart:
+            enabled: true
+            file-size-threshold: 2KB
+            max-file-size: 10MB
+            max-request-size: 15MB
+
+object-storage:
+    endpoint:
+        uri: http://localhost:9000
+    credentials:
+        access-key: ${OBJECT_STORAGE_ACCESS_KEY:minioadmin}
+        secret-key: ${OBJECT_STORAGE_ACCESS_KEY:minioadmin}
+    buckets:
+        product-preview:
+            name: product-preview
+            default-image: default.webp
+
+
