@@ -1,7 +1,11 @@
 package store.jackgnome.djarenaservice.model.product
 
+import java.util.UUID
+
 data class ProductUpdateRequest (
-    var id: String,
+    var id: UUID,
+    var vendorCode: String,
     var name: String,
     var price: Double,
+    var brand: UUID?,
 )

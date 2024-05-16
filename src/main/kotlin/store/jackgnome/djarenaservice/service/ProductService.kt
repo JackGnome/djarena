@@ -2,6 +2,7 @@ package store.jackgnome.djarenaservice.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
+import java.util.UUID
 import org.hibernate.search.engine.search.sort.dsl.SortOrder
 import org.hibernate.search.mapper.orm.Search
 import org.hibernate.search.util.common.data.RangeBoundInclusion
@@ -14,8 +15,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import store.jackgnome.djarenaservice.mapper.ProductMapper
-import store.jackgnome.djarenaservice.model.product.*
+import store.jackgnome.djarenaservice.mapper.productMapper
+import store.jackgnome.djarenaservice.model.product.FilterParameter
+import store.jackgnome.djarenaservice.model.product.ProductCreateRequest
+import store.jackgnome.djarenaservice.model.product.ProductDto
+import store.jackgnome.djarenaservice.model.product.ProductEntity
+import store.jackgnome.djarenaservice.model.product.ProductUpdateRequest
 import store.jackgnome.djarenaservice.repository.ProductRepository
 import store.jackgnome.djarenaservice.storage.ProductPreviewStorage
 
@@ -36,31 +41,30 @@ class ProductService : ApplicationListener<ApplicationReadyEvent> {
     @Autowired
     private lateinit var previewStorage: ProductPreviewStorage
 
-    private var mapper: ProductMapper = ProductMapper.INSTANCE
+//    private var mapper: ProductMapper = productMapper
 
     fun get(pageable: Pageable): Page<ProductDto> {
-
-        return repository.findAll(pageable).map(mapper::toDto)
+        return repository.findAll(pageable).map(productMapper::toDto)
     }
 
     @Transactional
     fun create(request: ProductCreateRequest): ProductDto {
-        val productEntity = mapper.toEntity(request)
+        val productEntity = productMapper.toEntity(request)
         productEntity.preview = previewStorage.getDefaultImageUrl()
         entityManager.persist(productEntity)
-        return mapper.toDto(productEntity)
+        return productMapper.toDto(productEntity)
     }
 
     @Transactional
     fun update(request: ProductUpdateRequest): ProductDto {
-        val productEntity = mapper.toEntity(request)
-        val storedProduct = repository.findById(productEntity.id).get()
+        val storedProduct = repository.findById(request.id).get()
 
-        storedProduct.name = productEntity.name
-        storedProduct.price = productEntity.price
+        storedProduct.name = request.name
+        storedProduct.price = request.price
+        storedProduct.vendorCode = request.vendorCode
 
         entityManager.persist(storedProduct)
-        return mapper.toDto(storedProduct)
+        return productMapper.toDto(storedProduct)
     }
 
     fun search(searchQuery: String, pageable: Pageable, filters: Map<String, String>): Page<ProductDto> {
@@ -125,7 +129,7 @@ class ProductService : ApplicationListener<ApplicationReadyEvent> {
 
         val products: List<ProductDto> = result.hits()
             .map { r -> r as ProductEntity }
-            .map { r -> mapper.toDto(r) }
+            .map { r -> productMapper.toDto(r) }
             .toList()
 
         return PageImpl(products, pageable, result.total().hitCount())
@@ -154,12 +158,12 @@ class ProductService : ApplicationListener<ApplicationReadyEvent> {
     }
 
     @Transactional
-    fun updatePreview(preview: MultipartFile, id: String): ProductDto {
+    fun updatePreview(preview: MultipartFile, id: UUID): ProductDto {
         val previewUrl = previewStorage.save(preview, id)
         val productEntity = productRepository.findById(id).get()
         productEntity.preview = previewUrl
         entityManager.persist(productEntity)
-        return mapper.toDto(productEntity)
+        return productMapper.toDto(productEntity)
     }
 
     @Transactional

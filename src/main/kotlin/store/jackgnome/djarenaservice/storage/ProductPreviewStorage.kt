@@ -2,6 +2,7 @@ package store.jackgnome.djarenaservice.storage
 
 import io.minio.MinioClient
 import io.minio.PutObjectArgs
+import java.util.UUID
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -22,7 +23,7 @@ class ProductPreviewStorage {
     @Value("\${object-storage.buckets.product-preview.default-image}")
     private lateinit var defaultImageName: String
 
-    fun save(preview: MultipartFile, productId: String): String = try {
+    fun save(preview: MultipartFile, productId: UUID): String = try {
         val previewName = buildImageName(preview, productId)
         minioClient.putObject(
             PutObjectArgs.builder()
@@ -38,10 +39,10 @@ class ProductPreviewStorage {
 
     fun getDefaultImageUrl(): String = "${endpoint}/${bucketName}/${defaultImageName}"
 
-    private fun buildImageName(preview: MultipartFile, productId: String): String {
+    private fun buildImageName(preview: MultipartFile, productId: UUID): String {
         val extension = preview.originalFilename?.split(".")?.last()
             ?: throw Exception("Incorrect image format: unknown extension")
-        return "product-preview-$productId.$extension"
+        return "$productId.$extension"
     }
 
     private fun buildImageUrl(imageName: String): String = "${endpoint}/${bucketName}/${imageName}"

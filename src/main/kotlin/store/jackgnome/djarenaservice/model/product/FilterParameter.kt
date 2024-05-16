@@ -16,7 +16,7 @@ data class FilterParameter (
     }
 
     constructor(field: String, values: List<String>): this() {
-        this.field = field
+        this.field = "$field.name"
         this.values = values
         type = FilterType.ValueFilter
     }

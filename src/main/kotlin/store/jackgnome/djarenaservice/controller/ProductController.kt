@@ -1,6 +1,7 @@
 package store.jackgnome.djarenaservice.controller
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -41,7 +42,7 @@ class ProductController {
     }
 
     @PutMapping("/{id}/preview")
-    fun updatePreview(@PathVariable id: String, @RequestParam("file") file: MultipartFile): ProductDto {
+    fun updatePreview(@PathVariable id: UUID, @RequestParam("file") file: MultipartFile): ProductDto {
         return productService.updatePreview(file, id)
     }
 
