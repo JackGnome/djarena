@@ -5,6 +5,7 @@ import java.util.UUID
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import store.jackgnome.djarenaservice.model.product.ProductCreateRequest
@@ -34,11 +36,19 @@ class ProductController {
     private lateinit var productSearchService: ProductSearchService
 
     @GetMapping
-    fun getProducts(pageable: Pageable): Page<ProductDto> {
-        return productService.get(pageable)
+    @ResponseStatus(HttpStatus.OK)
+    fun getAll(pageable: Pageable): Page<ProductDto> {
+        return productService.getAll(pageable)
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    fun get(@PathVariable id: UUID): ProductDto {
+        return productService.getById(id)
     }
 
     @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
     fun search(
         @RequestParam("query", defaultValue = "") query: String,
         pageable: Pageable,
@@ -48,16 +58,19 @@ class ProductController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody product: ProductCreateRequest): ProductDto {
         return productService.create(product)
     }
 
     @PutMapping("/{id}/preview")
+    @ResponseStatus(HttpStatus.OK)
     fun updatePreview(@PathVariable id: UUID, @RequestParam("file") file: MultipartFile): ProductDto {
         return productService.updatePreview(file, id)
     }
 
     @PutMapping
+    @ResponseStatus(HttpStatus.OK)
     fun update(@RequestBody request: ProductUpdateRequest): ProductDto {
         return productService.update(request)
     }

@@ -16,6 +16,6 @@ interface ProductMapper {
 
     fun toSearchDto(dto: ProductEntity): ProductSearchDto
 
-    @Mapping(target = "preview", ignore = true)
+    @Mapping(target = "preview", constant = "")
     fun toEntity(request: ProductCreateRequest): ProductEntity
 }

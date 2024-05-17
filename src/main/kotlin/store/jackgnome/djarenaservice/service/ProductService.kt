@@ -1,17 +1,15 @@
 package store.jackgnome.djarenaservice.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.persistence.EntityManager
 import java.util.UUID
-import org.hibernate.search.mapper.orm.Search
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.ApplicationListener
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import store.jackgnome.djarenaservice.exception.ItemAlreadyExistsException
+import store.jackgnome.djarenaservice.exception.ItemNotFoundException
 import store.jackgnome.djarenaservice.mapper.productMapper
 import store.jackgnome.djarenaservice.model.product.ProductCreateRequest
 import store.jackgnome.djarenaservice.model.product.ProductDto
@@ -21,9 +19,7 @@ import store.jackgnome.djarenaservice.repository.ProductRepository
 import store.jackgnome.djarenaservice.storage.ProductPreviewStorage
 
 @Service
-class ProductService : ApplicationListener<ApplicationReadyEvent> {
-
-    val logger = KotlinLogging.logger {}
+class ProductService {
 
     @Autowired
     private lateinit var productRepository: ProductRepository
@@ -32,53 +28,66 @@ class ProductService : ApplicationListener<ApplicationReadyEvent> {
     private lateinit var repository: ProductRepository
 
     @Autowired
-    private lateinit var entityManager: EntityManager
-
-    @Autowired
     private lateinit var previewStorage: ProductPreviewStorage
 
-    fun get(pageable: Pageable): Page<ProductDto> {
+    @Autowired
+    private lateinit var brandService: BrandService
+
+    val logger = KotlinLogging.logger {}
+
+    fun getAll(pageable: Pageable): Page<ProductDto> {
         return repository.findAll(pageable).map(productMapper::toDto)
+    }
+
+    fun getById(id: UUID): ProductDto {
+        return productMapper.toDto(getProductEntity(id))
     }
 
     @Transactional
     fun create(request: ProductCreateRequest): ProductDto {
+        assertProductEntityNotExistsByVendorCode(request.vendorCode)
+
         val productEntity = productMapper.toEntity(request)
+        productEntity.brand = request.brandId?.let(brandService::getBrandEntity)
         productEntity.preview = previewStorage.getDefaultImageUrl()
-        entityManager.persist(productEntity)
-        return productMapper.toDto(productEntity)
+        return productMapper.toDto(productRepository.save(productEntity))
     }
 
     @Transactional
     fun update(request: ProductUpdateRequest): ProductDto {
-        val storedProduct = repository.findById(request.id).get()
+        val productEntity = getProductEntity(request.id)
 
-        storedProduct.name = request.name
-        storedProduct.price = request.price
-        storedProduct.vendorCode = request.vendorCode
+        assertProductEntityNotExistsByVendorCodeAndIdNot(request.vendorCode, request.id)
 
-        entityManager.persist(storedProduct)
-        return productMapper.toDto(storedProduct)
+        productEntity.name = request.name
+        productEntity.price = request.price
+        productEntity.vendorCode = request.vendorCode
+        productEntity.brand = request.brandId?.let(brandService::getBrandEntity)
+
+        return productMapper.toDto(productRepository.save(productEntity))
     }
-
 
     @Transactional
     fun updatePreview(preview: MultipartFile, id: UUID): ProductDto {
-        val previewUrl = previewStorage.save(preview, id)
-        val productEntity = productRepository.findById(id).get()
-        productEntity.preview = previewUrl
-        entityManager.persist(productEntity)
-        return productMapper.toDto(productEntity)
+        val productEntity = getProductEntity(id)
+
+        productEntity.preview = previewStorage.save(preview, id)
+
+        return productMapper.toDto(productRepository.save(productEntity))
     }
 
-    @Transactional
-    override fun onApplicationEvent(event: ApplicationReadyEvent) {
-        try {
-            val searchSession = Search.session(entityManager)
-            val indexer = searchSession.massIndexer(ProductEntity::class.java)
-            indexer.startAndWait()
-        } catch (e: InterruptedException) {
-            println("An error occurred trying to build the search index: $e")
+    private fun assertProductEntityNotExistsByVendorCode(vendorCode: String) {
+        if (productRepository.existsByVendorCode(vendorCode)) {
+            throw ItemAlreadyExistsException(ProductEntity::class.simpleName.toString(), "vendorCode", vendorCode)
         }
     }
+
+    private fun assertProductEntityNotExistsByVendorCodeAndIdNot(vendorCode: String, id: UUID) {
+        if (productRepository.existsByVendorCodeAndIdNot(vendorCode, id)) {
+            throw ItemAlreadyExistsException(ProductEntity::class.simpleName.toString(), "vendorCode", vendorCode)
+        }
+    }
+
+    private fun getProductEntity(id: UUID): ProductEntity = productRepository.findById(id)
+        .orElseThrow { ItemNotFoundException(ProductEntity::class.simpleName.toString(), "id", id.toString()) }
 }

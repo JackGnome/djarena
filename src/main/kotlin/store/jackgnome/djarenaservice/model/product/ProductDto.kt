@@ -9,5 +9,5 @@ data class ProductDto (
     var name: String,
     var price: Double?,
     var preview: String,
-    var brand: BrandDto,
+    var brand: BrandDto?,
 )

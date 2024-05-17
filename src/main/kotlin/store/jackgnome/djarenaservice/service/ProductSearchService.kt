@@ -8,17 +8,20 @@ import org.hibernate.search.engine.search.sort.dsl.SortOrder
 import org.hibernate.search.mapper.orm.Search
 import org.hibernate.search.util.common.data.RangeBoundInclusion
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.ApplicationListener
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import store.jackgnome.djarenaservice.mapper.productMapper
 import store.jackgnome.djarenaservice.model.product.ProductEntity
 import store.jackgnome.djarenaservice.model.product.ProductSearchDto
 import store.jackgnome.djarenaservice.model.search.FilterParameter
 
 @Service
-class ProductSearchService {
+class ProductSearchService : ApplicationListener<ApplicationReadyEvent> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -68,6 +71,17 @@ class ProductSearchService {
             .toList()
 
         return PageImpl(products, pageable, result.total().hitCount())
+    }
+
+    @Transactional
+    override fun onApplicationEvent(event: ApplicationReadyEvent) {
+        try {
+            val searchSession = Search.session(entityManager)
+            val indexer = searchSession.massIndexer(ProductEntity::class.java)
+            indexer.startAndWait()
+        } catch (e: InterruptedException) {
+            println("An error occurred trying to build the search index: $e")
+        }
     }
 
     private fun applyRangeFilter(
