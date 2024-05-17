@@ -33,4 +33,6 @@ object-storage:
             name: product-preview
             default-image: default.webp
 
-
+logging:
+    service-code: djarena-service
+    exception-handler-trace: true
