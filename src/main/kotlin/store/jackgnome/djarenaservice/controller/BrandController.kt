@@ -1,5 +1,6 @@
 package store.jackgnome.djarenaservice.controller
 
+import jakarta.validation.Valid
 import java.util.UUID
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -27,7 +28,7 @@ class BrandController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: BrandCreateRequest): BrandDto {
+    fun create(@Valid @RequestBody request: BrandCreateRequest): BrandDto {
         return service.create(request)
     }
 
@@ -45,7 +46,7 @@ class BrandController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    fun update(@RequestBody request: BrandUpdateRequest): BrandDto {
+    fun update(@Valid @RequestBody request: BrandUpdateRequest): BrandDto {
         return service.update(request)
     }
 }

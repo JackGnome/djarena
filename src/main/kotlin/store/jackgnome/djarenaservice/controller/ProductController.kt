@@ -1,11 +1,13 @@
 package store.jackgnome.djarenaservice.controller
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.Valid
 import java.util.UUID
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -25,6 +27,7 @@ import store.jackgnome.djarenaservice.service.ProductService
 
 @RestController
 @RequestMapping("/api/v1/products")
+@Validated
 class ProductController {
 
     private val logger = KotlinLogging.logger {}
@@ -59,7 +62,7 @@ class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody product: ProductCreateRequest): ProductDto {
+    fun create(@Valid @RequestBody product: ProductCreateRequest): ProductDto {
         return productService.create(product)
     }
 
@@ -71,7 +74,7 @@ class ProductController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    fun update(@RequestBody request: ProductUpdateRequest): ProductDto {
+    fun update(@Valid @RequestBody request: ProductUpdateRequest): ProductDto {
         return productService.update(request)
     }
 }
