@@ -1,6 +1,6 @@
-package store.jackgnome.djarenaservice.model.product
+package store.jackgnome.djarenaservice.model.search
 
-data class FilterParameter (
+data class FilterParameter(
     var field: String = "",
     var minValue: Double = 0.0,
     var maxValue: Double = 0.0,
@@ -15,8 +15,8 @@ data class FilterParameter (
         type = FilterType.RangeFilter
     }
 
-    constructor(field: String, values: List<String>): this() {
-        this.field = "$field.name"
+    constructor(field: String, values: List<String>) : this() {
+        this.field = field
         this.values = values
         type = FilterType.ValueFilter
     }

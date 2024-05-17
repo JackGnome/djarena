@@ -5,21 +5,33 @@ import java.util.UUID
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import store.jackgnome.djarenaservice.model.product.ProductCreateRequest
 import store.jackgnome.djarenaservice.model.product.ProductDto
+import store.jackgnome.djarenaservice.model.product.ProductSearchDto
 import store.jackgnome.djarenaservice.model.product.ProductUpdateRequest
+import store.jackgnome.djarenaservice.service.ProductSearchService
 import store.jackgnome.djarenaservice.service.ProductService
 
 @RestController
 @RequestMapping("/api/v1/products")
 class ProductController {
 
-    val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
     @Autowired
     private lateinit var productService: ProductService
+
+    @Autowired
+    private lateinit var productSearchService: ProductSearchService
 
     @GetMapping
     fun getProducts(pageable: Pageable): Page<ProductDto> {
@@ -31,9 +43,8 @@ class ProductController {
         @RequestParam("query", defaultValue = "") query: String,
         pageable: Pageable,
         @RequestParam filters: Map<String, String>
-    ): Page<ProductDto> {
-        logger.info { filters.toString() + pageable.toString() }
-        return productService.search(query, pageable, filters)
+    ): Page<ProductSearchDto> {
+        return productSearchService.search(query, pageable, filters)
     }
 
     @PostMapping

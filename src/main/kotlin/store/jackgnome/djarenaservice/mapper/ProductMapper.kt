@@ -6,13 +6,15 @@ import org.mapstruct.factory.Mappers
 import store.jackgnome.djarenaservice.model.product.ProductCreateRequest
 import store.jackgnome.djarenaservice.model.product.ProductDto
 import store.jackgnome.djarenaservice.model.product.ProductEntity
-import store.jackgnome.djarenaservice.model.product.ProductUpdateRequest
+import store.jackgnome.djarenaservice.model.product.ProductSearchDto
 
 val productMapper: ProductMapper = Mappers.getMapper(ProductMapper::class.java)
 
 @Mapper
 interface ProductMapper {
     fun toDto(entity: ProductEntity): ProductDto
+
+    fun toSearchDto(dto: ProductEntity): ProductSearchDto
 
     @Mapping(target = "preview", ignore = true)
     fun toEntity(request: ProductCreateRequest): ProductEntity
