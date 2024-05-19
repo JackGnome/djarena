@@ -19,6 +19,7 @@ import store.jackgnome.djarenaservice.mapper.productMapper
 import store.jackgnome.djarenaservice.model.product.ProductEntity
 import store.jackgnome.djarenaservice.model.product.ProductSearchDto
 import store.jackgnome.djarenaservice.model.search.FilterParameter
+import store.jackgnome.djarenaservice.model.search.FilterType
 
 @Service
 class ProductSearchService : ApplicationListener<ApplicationReadyEvent> {
@@ -45,9 +46,9 @@ class ProductSearchService : ApplicationListener<ApplicationReadyEvent> {
 
                 for (filter in filterParams) {
                     when (filter.type) {
-                        FilterParameter.FilterType.RangeFilter -> applyRangeFilter(filter, f, root)
-                        FilterParameter.FilterType.ValueFilter -> applyValueFilter(filter, f, root)
-                        FilterParameter.FilterType.UnknownFilter -> {}
+                        FilterType.RangeFilter -> applyRangeFilter(filter, f, root)
+                        FilterType.ValueFilter -> applyValueFilter(filter, f, root)
+                        FilterType.UnknownFilter -> {}
                     }
                 }
             }

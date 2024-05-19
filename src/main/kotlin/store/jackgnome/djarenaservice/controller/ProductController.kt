@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -40,8 +41,8 @@ class ProductController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    fun getAll(pageable: Pageable): Page<ProductDto> {
-        return productService.getAll(pageable)
+    fun getAll(@RequestParam("isArchived") isArchived: Boolean?, pageable: Pageable): Page<ProductDto> {
+        return productService.getAll(isArchived, pageable)
     }
 
     @GetMapping("/{id}")
@@ -76,5 +77,17 @@ class ProductController {
     @ResponseStatus(HttpStatus.OK)
     fun update(@Valid @RequestBody request: ProductUpdateRequest): ProductDto {
         return productService.update(request)
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    fun archive(@PathVariable id: UUID): ProductDto {
+        return productService.archive(id)
+    }
+
+    @PostMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    fun restore(@PathVariable id: UUID): ProductDto {
+        return productService.restore(id)
     }
 }

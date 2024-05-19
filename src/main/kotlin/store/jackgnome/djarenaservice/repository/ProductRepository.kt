@@ -13,4 +13,5 @@ interface ProductRepository : CrudRepository<ProductEntity, UUID> {
     fun findAll(pageable: Pageable): Page<ProductEntity>
     fun existsByVendorCode(vendorCode: String): Boolean
     fun existsByVendorCodeAndIdNot(vendorCode: String, id: UUID): Boolean
+    fun findAllByArchived(archived: Boolean, pageable: Pageable): Page<ProductEntity>
 }

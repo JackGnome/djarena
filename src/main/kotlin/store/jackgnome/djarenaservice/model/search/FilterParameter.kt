@@ -20,10 +20,4 @@ data class FilterParameter(
         this.values = values
         type = FilterType.ValueFilter
     }
-
-    enum class FilterType {
-        RangeFilter,
-        ValueFilter,
-        UnknownFilter,
-    }
 }

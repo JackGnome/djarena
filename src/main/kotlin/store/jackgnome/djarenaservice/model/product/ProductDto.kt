@@ -10,4 +10,5 @@ data class ProductDto (
     var price: Double?,
     var preview: String,
     var brand: BrandDto?,
+    var isArchived: Boolean,
 )

@@ -8,7 +8,10 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import store.jackgnome.djarenaservice.exception.ItemAlreadyArchivedException
 import store.jackgnome.djarenaservice.exception.ItemAlreadyExistsException
+import store.jackgnome.djarenaservice.exception.ItemArchivedException
+import store.jackgnome.djarenaservice.exception.ItemNotArchivedException
 import store.jackgnome.djarenaservice.exception.ItemNotFoundException
 import store.jackgnome.djarenaservice.mapper.productMapper
 import store.jackgnome.djarenaservice.model.product.ProductCreateRequest
@@ -35,7 +38,10 @@ class ProductService {
 
     val logger = KotlinLogging.logger {}
 
-    fun getAll(pageable: Pageable): Page<ProductDto> {
+    fun getAll(isArchived: Boolean?, pageable: Pageable): Page<ProductDto> {
+        isArchived?.let {
+            return repository.findAllByArchived(isArchived, pageable).map(productMapper::toDto)
+        }
         return repository.findAll(pageable).map(productMapper::toDto)
     }
 
@@ -57,6 +63,7 @@ class ProductService {
     fun update(request: ProductUpdateRequest): ProductDto {
         val productEntity = getProductEntity(request.id)
 
+        assertProductEntityIsNotArchived(productEntity)
         assertProductEntityNotExistsByVendorCodeAndIdNot(request.vendorCode, request.id)
 
         productEntity.name = request.name
@@ -71,9 +78,34 @@ class ProductService {
     fun updatePreview(preview: MultipartFile, id: UUID): ProductDto {
         val productEntity = getProductEntity(id)
 
+        assertProductEntityIsNotArchived(productEntity)
         productEntity.preview = previewStorage.save(preview, id)
 
         return productMapper.toDto(productRepository.save(productEntity))
+    }
+
+    @Transactional
+    fun archive(id: UUID): ProductDto {
+        val productEntity = getProductEntity(id)
+
+        if (productEntity.isArchived) {
+            throw ItemAlreadyArchivedException(ProductEntity::class.toString(), "id", id.toString())
+        }
+
+        productEntity.archive()
+        return productMapper.toDto(repository.save(productEntity))
+    }
+
+    @Transactional
+    fun restore(id: UUID): ProductDto {
+        val productEntity = getProductEntity(id)
+
+        if (productEntity.isNotArchived) {
+            throw ItemNotArchivedException(ProductEntity::class.toString(), "id", id.toString())
+        }
+
+        productEntity.restore()
+        return productMapper.toDto(repository.save(productEntity))
     }
 
     private fun assertProductEntityNotExistsByVendorCode(vendorCode: String) {
@@ -85,6 +117,12 @@ class ProductService {
     private fun assertProductEntityNotExistsByVendorCodeAndIdNot(vendorCode: String, id: UUID) {
         if (productRepository.existsByVendorCodeAndIdNot(vendorCode, id)) {
             throw ItemAlreadyExistsException(ProductEntity::class.simpleName.toString(), "vendorCode", vendorCode)
+        }
+    }
+
+    private fun assertProductEntityIsNotArchived(productEntity: ProductEntity) {
+        if (productEntity.isArchived) {
+            throw ItemArchivedException(ProductEntity::class.toString(), "id", productEntity.id.toString())
         }
     }
 

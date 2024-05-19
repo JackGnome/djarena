@@ -9,4 +9,5 @@ import store.jackgnome.djarenaservice.model.brand.BrandEntity
 interface BrandRepository : CrudRepository<BrandEntity, UUID> {
     fun existsByName(name: String): Boolean
     fun findAll(pageable: Pageable): Page<BrandEntity>
+    fun findAllByArchived(isArchived: Boolean, pageable: Pageable): Page<BrandEntity>
 }
