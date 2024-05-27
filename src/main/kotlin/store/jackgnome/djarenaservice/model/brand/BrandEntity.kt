@@ -15,10 +15,10 @@ class BrandEntity(
     @KeywordField
     @Column(name = "name", updatable = true, nullable = false, columnDefinition = "VARCHAR(255)")
     var name: String,
+) : BaseAuditEntity() {
 
     @OneToMany(mappedBy = "brand", fetch = FetchType.LAZY)
-    var products: List<ProductEntity>
+    var products: List<ProductEntity> = emptyList()
 
-) : BaseAuditEntity() {
     override fun toString(): String = "${this::class.simpleName}(id=$id, name='$name')"
 }
