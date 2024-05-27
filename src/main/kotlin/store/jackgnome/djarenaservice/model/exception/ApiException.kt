@@ -5,4 +5,6 @@ import org.springframework.http.HttpStatus
 abstract class ApiException(message: String) : RuntimeException(message) {
     abstract val payload: Any
     abstract val statusCode: HttpStatus
+
+    open val code: String = this::class.simpleName.toString()
 }
