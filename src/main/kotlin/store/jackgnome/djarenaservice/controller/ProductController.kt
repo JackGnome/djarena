@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -63,30 +64,35 @@ class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     fun create(@Valid @RequestBody product: ProductCreateRequest): ProductDto {
         return productService.create(product)
     }
 
     @PutMapping("/{id}/preview")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     fun updatePreview(@PathVariable id: UUID, @RequestParam("file") file: MultipartFile): ProductDto {
         return productService.updatePreview(file, id)
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     fun update(@Valid @RequestBody request: ProductUpdateRequest): ProductDto {
         return productService.update(request)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     fun archive(@PathVariable id: UUID): ProductDto {
         return productService.archive(id)
     }
 
     @PostMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     fun restore(@PathVariable id: UUID): ProductDto {
         return productService.restore(id)
     }
